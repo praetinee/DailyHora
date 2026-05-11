@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ปฏิทินโหราศาสตร์ พฤษภาคม 2569</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Sarabun', sans-serif;
+            background-color: #f1f5f9; /* Slate 100 */
+        }
+        
+        /* Custom scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+        /* Animations */
+        .fade-in {
+            animation: fadeIn 0.4s ease-out forwards;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Calendar Cell Styles */
+        .calendar-day {
+            transition: all 0.2s ease;
+        }
+        .calendar-day:hover {
+            transform: scale(1.02);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            z-index: 10;
+        }
+        .calendar-day.selected {
+            ring-width: 4px;
+            ring-color: #6366f1; /* Indigo 500 */
+            background-color: #eef2ff; /* Indigo 50 */
+            transform: scale(1.05);
+            z-index: 20;
+        }
+    </style>
+</head>
+<body class="text-slate-800 antialiased min-h-screen flex flex-col">
+
+    <header class="bg-gradient-to-r from-indigo-800 via-purple-700 to-indigo-800 text-white py-8 px-4 shadow-md sticky top-0 z-30">
+        <div class="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
+            <div>
+                <h1 class="text-3xl md:text-4xl font-bold tracking-tight mb-2">ปฏิทินพฤษภาคม 2569</h1>
+                <p class="text-indigo-200 font-light text-sm md:text-base">คลิกที่วันที่เพื่อดูแนวโน้มและเหตุการณ์ที่ส่งผลกระทบในวันนั้น</p>
+            </div>
+            
+            <!-- Overall Highlight Mini Card -->
+            <div class="bg-white/10 backdrop-blur-md border border-white/20 rounded-lg p-3 max-w-xs text-sm">
+                <div class="flex items-center gap-2 font-semibold mb-1 text-green-300">
+                    <span>🌟🌟</span> ตลอดทั้งเดือน
+                </div>
+                <p class="text-indigo-50 leading-tight">ความโชคดี บุตร ความรัก ความคิดสร้างสรรค์ การลงทุน สำเร็จสูงสุดในรอบปี</p>
+            </div>
+        </div>
+    </header>
+
+    <main class="flex-grow max-w-7xl mx-auto w-full px-4 py-8 flex flex-col lg:flex-row gap-8">
+        
+        <!-- Left Column: Calendar -->
+        <div class="w-full lg:w-7/12 flex flex-col gap-4">
+            
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-4 md:p-6">
+                <!-- Calendar Header (Days of week) -->
+                <div class="grid grid-cols-7 gap-1 md:gap-2 text-center font-semibold text-slate-500 mb-2 md:mb-4 text-xs md:text-sm">
+                    <div class="text-red-500">อา.</div>
+                    <div>จ.</div>
+                    <div>อ.</div>
+                    <div>พ.</div>
+                    <div>พฤ.</div>
+                    <div>ศ.</div>
+                    <div class="text-indigo-500">ส.</div>
+                </div>
+                
+                <!-- Calendar Grid (Injected by JS) -->
+                <div id="calendar-grid" class="grid grid-cols-7 gap-1 md:gap-2">
+                    <!-- Days will go here -->
+                </div>
+                
+                <!-- Legend -->
+                <div class="mt-6 flex flex-wrap gap-4 justify-center text-xs md:text-sm text-slate-600">
+                    <div class="flex items-center gap-1"><span class="w-3 h-3 rounded-full bg-green-500"></span> ดี/โชคดี</div>
+                    <div class="flex items-center gap-1"><span class="w-3 h-3 rounded-full bg-yellow-400"></span> ปานกลาง/ระวัง</div>
+                    <div class="flex items-center gap-1"><span class="w-3 h-3 rounded-full bg-orange-400"></span> ค่อนข้างเครียด</div>
+                    <div class="flex items-center gap-1"><span class="w-3 h-3 rounded-full bg-red-500"></span> ซีเรียสสูง</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Column: Daily Details -->
+        <div class="w-full lg:w-5/12 relative">
+            <!-- Sticky container for desktop -->
+            <div class="lg:sticky lg:top-[120px] bg-white rounded-2xl shadow-md border border-slate-200 p-5 md:p-8 min-h-[400px] flex flex-col max-h-[calc(100vh-140px)] overflow-hidden">
+                
+                <h2 id="detail-date-title" class="text-2xl font-bold text-slate-800 border-b pb-4 mb-4 flex items-center gap-2">
+                    <span class="text-3xl text-indigo-500">📅</span> กรุณาเลือกวันที่
+                </h2>
+                
+                <!-- Scrollable events list -->
+                <div id="detail-events-list" class="overflow-y-auto flex-grow pr-2 space-y-4">
+                    <div class="h-full flex flex-col items-center justify-center text-slate-400 text-center space-y-4">
+                        <svg class="w-16 h-16 opacity-20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                        <p>คลิกที่ตัวเลขวันที่บนปฏิทิน<br>เพื่อดูรายละเอียดเหตุการณ์</p>
+                    </div>
+                </div>
+                
+            </div>
+        </div>
+
+    </main>
+
+    <script>
+        // Data derived from user input, formatted with start and end days (1-31 for May)
+        const eventsData = [
+            {
+                start: 1, end: 31,
+                timeText: "ตลอดเดือน",
+                title: "ความโชคดีสูงสุด",
+                content: "ความโชคดี บุตร ความรัก ความคิดสร้างสรรค์ การลงทุน ความสำเร็จเรื่องส่วนตัว พุ่งสูงที่สุดในรอบปี",
+                severity: "🌟🌟 โชคดีมาก",
+                color: "green"
+            },
+            {
+                start: 1, end: 11,
+                timeText: "เดือนก่อน - 11 พ.ค.",
+                title: "ระวังรายจ่าย",
+                content: "มีรายจ่ายที่ไม่คาดคิดเกี่ยวกับเรื่องสุขภาพ หรือเรื่องแม่ หรือการเดินทางโผล่มา รายจ่ายเร็ว รายได้ช้า ระวังการใช้จ่ายหุนหันพลันแล่น",
+                severity: "🔶 ปานกลาง",
+                color: "orange"
+            },
+            {
+                start: 1, end: 16,
+                timeText: "เดือนก่อน - 16 พ.ค. 22:55 น.",
+                title: "บ้านอบอุ่น ครอบครัวสุขใจ",
+                content: "อยากปรับปรุงบ้าน ซื้อของตกแต่งบ้าน ความสัมพันธ์กับแม่ดีงาม การงานได้รับอานิสงส์จากความสัมพันธ์ที่ดี",
+                severity: "🟢 ดีมาก",
+                color: "green"
+            },
+            {
+                start: 10, end: 27,
+                timeText: "10 พ.ค. 04:34 น. — 27 พ.ค. 22:57 น.",
+                title: "สื่อสารเรื่องบ้าน/ทรัพย์สิน",
+                content: "ความคิดและการสื่อสารวนเวียนเรื่องบ้าน ครอบครัว ทรัพย์สิน อาจมีการเจรจา ลงนามเอกสาร หรือสัญญาเกี่ยวกับบ้าน/ที่ดิน/รถ",
+                severity: "🟡 กลางๆ (กิจกรรมที่ต้องทำ)",
+                color: "yellow"
+            },
+            {
+                start: 10, end: 12,
+                timeText: "10 พ.ค. 05:59 น. — 12 พ.ค. 13:50 น.",
+                title: "ร่างกายไม่สบายตัว จิตใจอ่อนไหว",
+                content: "เหนื่อยล้าผิดปกติ ปวดหัว หรือมีเรื่องเครียดสะสมถาโถม อารมณ์ขึ้นลงง่าย รู้สึกโดดเดี่ยว อาจมีคำพูดที่ทำให้ผู้หญิงด้วยกันหรือคู่รักเจ็บปวด",
+                severity: "🔶 ปานกลาง",
+                color: "orange"
+            },
+            {
+                start: 12, end: 14,
+                timeText: "12 พ.ค. 13:50 น. — 14 พ.ค. 19:17 น.",
+                title: "การเงินอ่อนไหว",
+                content: "ระวังตัดสินใจซื้อของราคาแพงในช่วงนี้",
+                severity: "🔶 ปานกลาง",
+                color: "orange"
+            },
+            {
+                start: 12, end: 31,
+                timeText: "12 พ.ค. 03:58 น. — สิ้นเดือน",
+                title: "ความเครียด/ขัดแย้งทางอารมณ์รุนแรง",
+                content: "ตัวเอง/แม่/ผู้หญิงใกล้ชิด มีปากเสียงรุนแรง ป่วยจากความเครียด วิตกกังวล นอนไม่หลับ งานหนักและกดดันขึ้น ผู้บังคับบัญชาเข้ามาตรวจสอบ (เกิดขึ้นในบ้าน/เดินทางใกล้ๆ แต่มีคนช่วยพยุงนาทีสุดท้าย)",
+                severity: "🔴🔴 สูง",
+                color: "red"
+            },
+            {
+                start: 14, end: 16,
+                timeText: "14 พ.ค. 19:17 น. — 16 พ.ค. 22:55 น.",
+                title: "อารมณ์แปรปรวนจากการสื่อสาร",
+                content: "อาจมีเรื่องพี่น้องหรือการสื่อสารที่ทำให้อารมณ์แปรปรวน",
+                severity: "🔶 ปานกลาง",
+                color: "orange"
+            },
+            {
+                start: 15, end: 31,
+                timeText: "15 พ.ค. 08:19 น. — สิ้นเดือน",
+                title: "เรื่องบ้านและครอบครัวครอบงำ",
+                content: "คู่รักจะอยู่บ้านมากขึ้น เรื่องสำคัญในความสัมพันธ์เกิดในบ้าน บิดาอาจมีเรื่องสำคัญ/ทรัพย์สิน การงานชื่อเสียงถูกจับตาจากผู้มีอำนาจ",
+                severity: "🟡-🔶 ปานกลาง (บางมิติดี บางมิติต้องระวัง)",
+                color: "yellow"
+            },
+            {
+                start: 16, end: 19,
+                timeText: "16 พ.ค. 22:55 น. — 19 พ.ค. 01:34 น.",
+                title: "บ้านตึงเครียด",
+                content: "อาจมีการโต้เถียงกับแม่ ความขัดแย้งในครอบครัว หรือเรื่องค่าใช้จ่ายบ้านที่ทำให้หงุดหงิด รู้สึกบ้านไม่ปลอดภัย ร้อนใจ",
+                severity: "🔶 ปานกลาง",
+                color: "orange"
+            },
+            {
+                start: 17, end: 31,
+                timeText: "17 พ.ค. 07:54 น. — สิ้นเดือน",
+                title: "ความรัก สร้างสรรค์ ดีที่สุดของปี",
+                content: "ช่วงที่เรื่องความรัก ความสนุก งานอดิเรก สร้างสรรค์โดดเด่น อาจมีการออกไปข้างนอก ท่องเที่ยว ทำกิจกรรมสนุกสนาน",
+                severity: "🌟🌟 ดีมาก",
+                color: "green"
+            },
+            {
+                start: 19, end: 21,
+                timeText: "19 พ.ค. 01:34 น. — 21 พ.ค. 04:00 น.",
+                title: "ครอบครัวนำสุข",
+                content: "อบอุ่นใจ มีความสุข ครอบครัวและลูกนำรอยยิ้มมาให้",
+                severity: "🟢 ดี",
+                color: "green"
+            },
+            {
+                start: 21, end: 23,
+                timeText: "21 พ.ค. 04:00 น. — 23 พ.ค. 07:12 น.",
+                title: "ความเครียดจากงาน/สุขภาพ",
+                content: "ความเครียดจากงาน สุขภาพ หรือความขัดแย้งกับผู้ใต้บังคับบัญชา ระวังโรคเกี่ยวกับกระเพาะ ลำไส้ หรืออาหารการกิน",
+                severity: "🟡 เล็กน้อย-ปานกลาง",
+                color: "yellow"
+            },
+            {
+                start: 23, end: 25,
+                timeText: "23 พ.ค. 07:12 น. — 25 พ.ค. 11:59 น.",
+                title: "งาน/สุขภาพกระทบความสัมพันธ์",
+                content: "เรื่องงานหรือสุขภาพมีผลต่อความสัมพันธ์ อาจมีการพูดคุยเรื่องสำคัญกับคู่",
+                severity: "🟡 เล็กน้อย",
+                color: "yellow"
+            },
+            {
+                start: 25, end: 27,
+                timeText: "25 พ.ค. 11:59 น. — 27 พ.ค. 18:59 น.",
+                title: "หนักใจ วิตกกังวล",
+                content: "รู้สึกหนักใจ กลัวสูญเสีย วิตกกังวลเรื่องที่มองไม่เห็น มีเรื่องเงินกู้ ดอกเบี้ย ประกัน ภาษี ต้องจัดการ สุขภาพคนใกล้ชิดน่าเป็นห่วง",
+                severity: "🔶 ปานกลาง",
+                color: "orange"
+            },
+            {
+                start: 27, end: 31,
+                timeText: "27 พ.ค. 22:57 น. — สิ้นเดือน",
+                title: "สร้างสรรค์พุ่ง แต่ระวังอารมณ์",
+                content: "การเขียน/สื่อสารดี โชคลาภเดินทางดี แต่ระวัง: อารมณ์อ่อนไหวมาก ร้องไห้ง่าย รู้สึกเหมือนแบกโลก (มีพฤหัสบดีดีคุ้มอยู่ ไม่ถึงวิกฤต)",
+                severity: "🔶🔴 ค่อนข้างสูง (ขึ้นสูง-ลงลึก)",
+                color: "red"
+            },
+            {
+                start: 31, end: 31,
+                timeText: "31 พ.ค. 21:45 น. เป็นต้นไป",
+                title: "ภาระงานเพิ่มขึ้น",
+                content: "งานถูกหยิบยกขึ้นมาอีกครั้ง โชคดีส่วนตัวลดลง ภาระงานเพิ่ม ต้องทุ่มเทมากขึ้น ควรปิดดีลสำคัญๆ ก่อน 31 พ.ค.",
+                severity: "🔶 สังเกตและเตรียมพร้อม",
+                color: "orange"
+            }
+        ];
+
+        const calendarGrid = document.getElementById('calendar-grid');
+        const detailDateTitle = document.getElementById('detail-date-title');
+        const detailEventsList = document.getElementById('detail-events-list');
+
+        // Color mapping for styles
+        const colorMap = {
+            green: { dot: 'bg-green-500', bg: 'bg-green-50', border: 'border-green-400', text: 'text-green-800' },
+            yellow: { dot: 'bg-yellow-400', bg: 'bg-yellow-50', border: 'border-yellow-400', text: 'text-yellow-800' },
+            orange: { dot: 'bg-orange-400', bg: 'bg-orange-50', border: 'border-orange-400', text: 'text-orange-800' },
+            red: { dot: 'bg-red-500', bg: 'bg-red-50', border: 'border-red-400', text: 'text-red-800' }
+        };
+
+        let selectedCell = null;
+
+        function initCalendar() {
+            // May 2026 has 31 days. May 1, 2026 is a Friday.
+            // Sun=0, Mon=1, Tue=2, Wed=3, Thu=4, Fri=5, Sat=6
+            const startDayOfWeek = 5; 
+            const totalDays = 31;
+
+            // Add empty cells for the offset
+            for (let i = 0; i < startDayOfWeek; i++) {
+                const emptyDiv = document.createElement('div');
+                emptyDiv.className = 'aspect-square bg-transparent';
+                calendarGrid.appendChild(emptyDiv);
+            }
+
+            // Add actual days
+            for (let day = 1; day <= totalDays; day++) {
+                const dayEvents = getEventsForDay(day);
+                
+                const dayCell = document.createElement('div');
+                dayCell.className = `calendar-day aspect-square bg-slate-50 border border-slate-200 rounded-lg p-1 md:p-2 cursor-pointer flex flex-col items-center justify-start relative group overflow-hidden`;
+                
+                // Add day number
+                const isWeekend = ((day + startDayOfWeek - 1) % 7 === 0) || ((day + startDayOfWeek - 1) % 7 === 6);
+                const dayNum = document.createElement('span');
+                dayNum.className = `text-sm md:text-lg font-bold ${isWeekend ? 'text-indigo-600' : 'text-slate-700'}`;
+                dayNum.innerText = day;
+                dayCell.appendChild(dayNum);
+
+                // Add event dots container
+                const dotsContainer = document.createElement('div');
+                dotsContainer.className = 'flex flex-wrap gap-[2px] justify-center mt-1 md:mt-2 w-full px-1';
+                
+                // Determine which dots to show (prioritize distinct colors to save space)
+                const uniqueColors = new Set();
+                let dotCount = 0;
+                
+                dayEvents.forEach(event => {
+                    // Skip "ตลอดเดือน" dot to reduce clutter, except if it's the only one
+                    if (event.timeText === "ตลอดเดือน" && dayEvents.length > 1) return;
+                    
+                    if (dotCount < 6) { // Max 6 dots visually
+                        const dot = document.createElement('div');
+                        dot.className = `w-1.5 h-1.5 md:w-2 md:h-2 rounded-full ${colorMap[event.color].dot}`;
+                        dotsContainer.appendChild(dot);
+                        dotCount++;
+                    }
+                });
+                dayCell.appendChild(dotsContainer);
+
+                // Click event to show details
+                dayCell.addEventListener('click', () => {
+                    // Handle selection styling
+                    if (selectedCell) {
+                        selectedCell.classList.remove('selected', 'ring-4', 'ring-indigo-400');
+                    }
+                    dayCell.classList.add('selected', 'ring-4', 'ring-indigo-400');
+                    selectedCell = dayCell;
+
+                    showDetails(day, dayEvents);
+                });
+
+                calendarGrid.appendChild(dayCell);
+            }
+        }
+
+        function getEventsForDay(day) {
+            return eventsData.filter(event => day >= event.start && day <= event.end);
+        }
+
+        function showDetails(day, events) {
+            // Update Title
+            detailDateTitle.innerHTML = `<span class="text-3xl text-indigo-500">📅</span> วันที่ ${day} พฤษภาคม 2569`;
+            
+            // Clear current list
+            detailEventsList.innerHTML = '';
+            
+            // Sort events so that specific short-term events appear before "ตลอดเดือน"
+            const sortedEvents = [...events].sort((a, b) => {
+                const spanA = a.end - a.start;
+                const spanB = b.end - b.start;
+                return spanA - spanB; 
+            });
+
+            if (sortedEvents.length === 0) {
+                detailEventsList.innerHTML = `<p class="text-center text-slate-500 mt-10">ไม่มีเหตุการณ์พิเศษที่ระบุในวันนี้</p>`;
+                return;
+            }
+
+            sortedEvents.forEach((event, index) => {
+                const colors = colorMap[event.color];
+                
+                const card = document.createElement('div');
+                card.className = `fade-in bg-white rounded-xl border-l-4 ${colors.border} p-4 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden`;
+                card.style.animationDelay = `${index * 0.05}s`;
+                
+                // Background subtle tint
+                const bgTint = document.createElement('div');
+                bgTint.className = `absolute inset-0 ${colors.bg} opacity-30 pointer-events-none`;
+                card.appendChild(bgTint);
+
+                const cardContent = `
+                    <div class="relative z-10">
+                        <div class="flex flex-wrap items-center justify-between mb-2 gap-2">
+                            <span class="text-xs font-semibold px-2 py-1 bg-slate-100 text-slate-600 rounded">
+                                🕒 ${event.timeText}
+                            </span>
+                            <span class="text-xs font-bold ${colors.text} bg-white/80 px-2 py-1 rounded-full shadow-sm">
+                                ${event.severity}
+                            </span>
+                        </div>
+                        <h3 class="font-bold text-lg text-slate-800 mb-1">${event.title}</h3>
+                        <p class="text-slate-600 text-sm md:text-base leading-relaxed">${event.content}</p>
+                    </div>
+                `;
+                
+                card.innerHTML += cardContent;
+                detailEventsList.appendChild(card);
+            });
+            
+            // On mobile, smooth scroll down to the details area
+            if (window.innerWidth < 1024) {
+                setTimeout(() => {
+                    detailDateTitle.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }, 100);
+            }
+        }
+
+        // Initialize App
+        window.addEventListener('DOMContentLoaded', () => {
+            initCalendar();
+        });
+
+    </script>
+</body>
+</html>
